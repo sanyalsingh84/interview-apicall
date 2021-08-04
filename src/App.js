@@ -1,25 +1,60 @@
-import logo from './logo.svg';
-import './App.css';
+import { useEffect, useState } from "react";
+import axios from "axios";
+import Users from "./components/Users";
 
-function App() {
+const App = () => {
+  const [users, setUsers] = useState([]);
+  const [totalPages, setTotalPages] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const { data } = await axios.get(
+          `https://reqres.in/api/users?page=${currentPage}`
+        );
+        if (data) {
+          let temp = [];
+          for (let i = 1; i <= data.total; i++) {
+            temp.push(i);
+          }
+          setTotalPages(temp);
+          setUsers(data.data);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    fetchData();
+  }, [currentPage]);
+
+  const handleClick = (page) => {
+    setCurrentPage(page);
+  };
+
+  // console.log(users);
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <div className="container">
+        {users &&
+          users.map((user) => {
+            return <Users key={user.id} user={user} />;
+          })}
+      </div>
+      <div className="pages">
+        <p>Pages:</p>
+        {totalPages &&
+          totalPages.map((page, i) => (
+            <button
+              onClick={() => handleClick(page)}
+              key={i}
+              className={currentPage === page ? "btn btn-active" : "btn"}>
+              {page}
+            </button>
+          ))}
+      </div>
+    </>
   );
-}
+};
 
 export default App;
